@@ -8,6 +8,9 @@ __author__ = "marcornett"
 import sys
 import logging
 import argparse
+import signal
+import time
+import os
 
 
 def search_for_magic(filename, start_line, magic_string):
@@ -20,7 +23,7 @@ def search_for_magic(filename, start_line, magic_string):
 
 
 def watch_directory(path, magic_string, extension, interval):
-    # Your code here
+    print('calling watch_directory')
     return
 
 
@@ -40,29 +43,56 @@ def create_parser():
 
 
 def signal_handler(sig_num, frame):
-    # Your code here
-    return
+    """
+    This is a handler for SIGTERM and SIGINT. Other signals can be mapped here as well (SIGHUP?)
+    Basically, it just sets a global flag, and main() will exit its loop if the signal is trapped.
+    :param sig_num: The integer signal number that was trapped from the OS.
+    :param frame: Not used
+    :return None
+    """
+    # log the associated signal name
+    # TODO logger
+    # logger.warn('Received ' + signal.Signals(sig_num).name)
+    sys.exit(1)
 
 
 def main(args):
     """Main driver code for dirwatcher."""
-    # logging.basicConfig(level=logging.INFO)
-    # logging.info("args:", args)
+
+    # Register signals to catch
+    signal.signal(signal.SIGTERM, signal_handler)
+    signal.signal(signal.SIGINT, signal_handler)
+
+    # Collect command line arguments
     parser = create_parser()
-
     ns = parser.parse_args(args)
-
     if not ns:
         # TODO find out if sys.exit is allowed here
         parser.print_usage()
         sys.exit(1)
-
     directory = ns.directory
+    print(directory)
+    # print(os.path.abspath(directory))
     extension = ns.extension
-    interval = ns.interval
+    interval = int(ns.interval)
     magic_word = ns.magic
 
-    # TODO call functions using args
+    while True:
+        try:
+            print('working')
+            watch_directory()
+        except Exception:
+            # This is an UNHANDLED exception
+            # TODO Log an ERROR level message here
+            pass
+        else:
+            pass
+        finally:
+            # Checks for provided interval
+            if not interval:
+                time.sleep(interval)
+            else:
+                time.sleep(1)
 
 
 if __name__ == '__main__':

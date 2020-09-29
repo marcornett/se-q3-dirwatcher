@@ -13,6 +13,20 @@ import time
 import os
 
 
+# logging.basicConfig(level=logging.DEBUG,
+#                     format='%(asctime)s:%(name)s:%(levelname)s:%(message)s')
+
+def create_logger():
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.INFO)
+    formatter = logging.Formatter(
+        '%(asctime)s:%(name)s:%(levelname)s:%(message)s')
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    return logger
+
+
 def search_for_magic(filename, start_line, magic_string):
     # Your code here
     return
@@ -50,9 +64,14 @@ def signal_handler(sig_num, frame):
     :param frame: Not used
     :return None
     """
-    # log the associated signal name
-    # TODO logger
-    # logger.warn('Received ' + signal.Signals(sig_num).name)
+    # All log messages should contain timestamps.
+
+    # exceptions, magic text found events,
+    # files added or removed from watched dir,
+    # and OS signal events.
+    logger = create_logger()
+    logger.warning('Received ' + signal.Signals(sig_num).name)
+    # TODO log shutdown banner
     sys.exit(1)
 
 
@@ -74,8 +93,10 @@ def main(args):
     print(directory)
     # print(os.path.abspath(directory))
     extension = ns.extension
-    interval = int(ns.interval)
     magic_word = ns.magic
+    interval = ns.interval
+
+    # TODO log startup banner
 
     while True:
         try:
@@ -90,9 +111,9 @@ def main(args):
         finally:
             # Checks for provided interval
             if not interval:
-                time.sleep(interval)
-            else:
                 time.sleep(1)
+            else:
+                time.sleep(int(interval))
 
 
 if __name__ == '__main__':

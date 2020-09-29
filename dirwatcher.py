@@ -13,16 +13,15 @@ import time
 import os
 
 
-# logging.basicConfig(level=logging.DEBUG,
-#                     format='%(asctime)s:%(name)s:%(levelname)s:%(message)s')
-
 def create_logger():
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.INFO)
+
     formatter = logging.Formatter(
         '%(asctime)s:%(name)s:%(levelname)s:%(message)s')
     handler = logging.StreamHandler(sys.stdout)
     handler.setFormatter(formatter)
+
     logger.addHandler(handler)
     return logger
 
@@ -31,14 +30,46 @@ def search_for_magic(filename, start_line, magic_string):
     # Your code here
     return
 
-# Do break up your code into small functions such as
-# scan_single_file(), detect_added_files(),
-# detect_removed_files(), and watch_directory().
+
+track_dict = {}
 
 
 def watch_directory(path, magic_string, extension, interval):
-    print('calling watch_directory')
-    return
+    """Monitors given directory and reports back changes"""
+    #  TODO Do synchronize your dictionary model with the actual directory contents
+    files = []
+    for r, d, f in os.walk(path):
+        for filename in f:
+            files.append(filename)
+
+    # TODO For every file in the directory, add it to your dictionary if it is not already there(exclude files without proper extensions).
+    for i, filename in enumerate(files):
+        if extension in filename:
+            if filename not in track_dict:
+                track_dict[filename] = i
+                # TODO report new files added to dictionary
+            else:
+                track_dict
+
+    print(track_dict)
+
+    with open(f'{path}/{filename}', 'r') as f:
+        file_contents = f.readline()
+
+    # TODO Do use a strategy of modeling the contents of the directory
+    # TODO within your program using a dictionary. The keys will be filenames
+    # TODO and the values will be the last line number that was read during
+    # TODO the previous polling iteration. Keep track of the last line read.
+    # TODO When opening and reading the file, skip over all the lines that
+    # TODO you have previously examined.
+
+    # TODO Do break up your code into small functions such as
+    # TODO scan_single_file(), detect_added_files(),
+    # TODO detect_removed_files(), and watch_directory().
+
+    # TODO Report new files that are added to your dictionary.
+    # TODO For every entry in your dictionary, find out if it still exists in the directory. If not, remove it from your dictionary and report it as deleted.
+    # TODO Once you have synchronized your dictionary, it is time to iterate through all of its files and look for magic text, starting from the line number where you left off last time.
 
 
 def create_parser():
@@ -57,13 +88,7 @@ def create_parser():
 
 
 def signal_handler(sig_num, frame):
-    """
-    This is a handler for SIGTERM and SIGINT. Other signals can be mapped here as well (SIGHUP?)
-    Basically, it just sets a global flag, and main() will exit its loop if the signal is trapped.
-    :param sig_num: The integer signal number that was trapped from the OS.
-    :param frame: Not used
-    :return None
-    """
+    """Handler for SIGTERM and SIGINT."""
     # All log messages should contain timestamps.
 
     # exceptions, magic text found events,
@@ -94,9 +119,8 @@ def main(args):
         # TODO find out if sys.exit is allowed here
         parser.print_usage()
         sys.exit(1)
-    directory = ns.directory
-    print(directory)
-    # print(os.path.abspath(directory))
+    # path = os.path.abspath(ns.directory)
+    path = ns.directory
     extension = ns.extension
     magic_word = ns.magic
     interval = ns.interval
@@ -109,13 +133,14 @@ def main(args):
     """)
 
     start_time = time.time()
+
+    #  TODO use exit flag
+    exit_flag = False
     while True:
         try:
-            print('working')
-            watch_directory()
+            watch_directory(path, magic_word, extension, interval)
         except Exception:
-            # This is an UNHANDLED exception
-            # TODO Log an ERROR level message here
+            # TODO logging.error(f'Sorry but... {Exception}')
             pass
         else:
             pass

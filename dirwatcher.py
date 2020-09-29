@@ -71,7 +71,12 @@ def signal_handler(sig_num, frame):
     # and OS signal events.
     logger = create_logger()
     logger.warning('Received ' + signal.Signals(sig_num).name)
-    # TODO log shutdown banner
+    logger.info(f"""
+-------------------------------------------------------------------
+    Stopped dirwatcher.py
+    Uptime was TODO: UPTIME
+-------------------------------------------------------------------
+    """)
     sys.exit(1)
 
 
@@ -96,8 +101,14 @@ def main(args):
     magic_word = ns.magic
     interval = ns.interval
 
-    # TODO log startup banner
+    logger = create_logger()
+    logger.info(f"""
+-------------------------------------------------------------------
+    Start dirwatcher.py
+-------------------------------------------------------------------
+    """)
 
+    start_time = time.time()
     while True:
         try:
             print('working')

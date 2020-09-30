@@ -31,37 +31,37 @@ def search_for_magic(filename, start_line, magic_string):
     return
 
 
-track_dict = {}
+def scan_single_file():
+    pass
+
+
+def detect_added_files():
+    pass
+
+
+def detect_removed_files():
+    pass
 
 
 def watch_directory(path, magic_string, extension, interval):
     """Monitors given directory and reports back changes"""
-    #  TODO Do synchronize your dictionary model with the actual directory contents
-    files = []
-    for r, d, f in os.walk(path):
-        for filename in f:
-            files.append(filename)
+    file_list = [f for f in os.listdir(path) if os.path.isfile(
+        os.path.join(os.path.abspath(path), f))]
+    file_dict = {k: 0 for k in file_list if extension in k}
+    return file_dict
 
-    # TODO For every file in the directory, add it to your dictionary if it is not already there(exclude files without proper extensions).
-    for i, filename in enumerate(files):
-        if extension in filename:
-            if filename not in track_dict:
-                track_dict[filename] = i
-                # TODO report new files added to dictionary
-            else:
-                track_dict
-
-    print(track_dict)
-
-    with open(f'{path}/{filename}', 'r') as f:
-        file_contents = f.readline()
-
-    # TODO Do use a strategy of modeling the contents of the directory
-    # TODO within your program using a dictionary. The keys will be filenames
+    # TODO The keys will be filenames
     # TODO and the values will be the last line number that was read during
     # TODO the previous polling iteration. Keep track of the last line read.
+
+    # TODO report new files added to dictionary
+
     # TODO When opening and reading the file, skip over all the lines that
     # TODO you have previously examined.
+    # with open(f'{path}/{filename}', 'r') as f:
+    #     file_contents = f.read()
+    #     print(file_contents)
+    #     f.seek()
 
     # TODO Do break up your code into small functions such as
     # TODO scan_single_file(), detect_added_files(),
@@ -138,7 +138,8 @@ def main(args):
     exit_flag = False
     while True:
         try:
-            watch_directory(path, magic_word, extension, interval)
+            file_dict = watch_directory(path, magic_word, extension, interval)
+            print(file_dict)
         except Exception:
             # TODO logging.error(f'Sorry but... {Exception}')
             pass

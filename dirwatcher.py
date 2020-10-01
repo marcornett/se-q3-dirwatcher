@@ -10,6 +10,7 @@ import logging
 import argparse
 import signal
 import time
+import datetime
 import os
 
 
@@ -18,7 +19,7 @@ def create_logger():
     logger.setLevel(logging.INFO)
 
     formatter = logging.Formatter(
-        '%(asctime)s:%(name)s:%(levelname)s:%(message)s')
+        '%(asctime)s %(name)s %(levelname)s \n%(message)s')
     handler = logging.StreamHandler(sys.stdout)
     handler.setFormatter(formatter)
 
@@ -31,24 +32,65 @@ def search_for_magic(filename, start_line, magic_string):
     return
 
 
-def scan_single_file():
-    pass
+def scan_single_file(single_file, path):
+    with open(os.path.join(path, single_file)) as f:
+        file_content = f.readlines()
+        return (single_file, len(file_content))
+
+    # with open(f'{path}/{filename}', 'r') as f:
+    #     file_contents = f.read()
+    #     print(file_contents)
+    #     f.seek()
+    # TODO return seek location
 
 
-def detect_added_files():
-    pass
+def detect_added_files(before, after):
+    return [f for f in os.listdir(path)]
 
 
-def detect_removed_files():
-    pass
+def detect_removed_files(file_dict):
+    return []
+
+
+before = {}
 
 
 def watch_directory(path, magic_string, extension, interval):
     """Monitors given directory and reports back changes"""
-    file_list = [f for f in os.listdir(path) if os.path.isfile(
-        os.path.join(os.path.abspath(path), f))]
-    file_dict = {k: 0 for k in file_list if extension in k}
-    return file_dict
+    logger = create_logger()
+
+    global before
+    after = {f: 0 for f in os.listdir(path)}
+    # add to before
+    before.update(after)
+    # check before to see if same as after
+    print(before, after)
+    after = detect_added_files()
+    # added = [f for f in after if not f in before]
+    # removed = [f for f in before if not f in after]
+    # if added:
+    #     print(added)
+    # if removed:
+    #     print(removed)
+    # before = after
+
+    # TODO Report new files that are added to your dictionary.
+    # TODO For every entry in your dictionary, find out if it still exists in the directory. If not, remove it from your dictionary and report it as deleted.
+    # update dict to have read the file at certain point and conditionally log new files that haven't been read yet
+
+    # TODO Once you have synchronized your dictionary,
+    # TODO it is time to iterate through all of its files and
+    # TODO look for magic text, starting from the line number
+    # TODO where you left off last time.
+    # for f in file_dict:
+    #     if f not in file_dict:
+    #         print(f)
+    #     else:
+    #         file_dict.update(scan)
+    #         print(file_dict)
+    # # Scans files
+    #     scan = scan_single_file(f, path)
+    # return file_dict
 
     # TODO The keys will be filenames
     # TODO and the values will be the last line number that was read during
@@ -58,28 +100,14 @@ def watch_directory(path, magic_string, extension, interval):
 
     # TODO When opening and reading the file, skip over all the lines that
     # TODO you have previously examined.
-    # with open(f'{path}/{filename}', 'r') as f:
-    #     file_contents = f.read()
-    #     print(file_contents)
-    #     f.seek()
-
-    # TODO Do break up your code into small functions such as
-    # TODO scan_single_file(), detect_added_files(),
-    # TODO detect_removed_files(), and watch_directory().
-
-    # TODO Report new files that are added to your dictionary.
-    # TODO For every entry in your dictionary, find out if it still exists in the directory. If not, remove it from your dictionary and report it as deleted.
-    # TODO Once you have synchronized your dictionary, it is time to iterate through all of its files and look for magic text, starting from the line number where you left off last time.
 
 
 def create_parser():
     """Creates command line parser object to accept one argument."""
     parser = argparse.ArgumentParser()
-    # todo if no directory log dirtory XXXX does not exist
     parser.add_argument('-dir', '--directory', help='Directory to watch.')
     parser.add_argument('-ext', '--extension',
                         help='Extension type to look for.')
-    # todo polling interval default to 1.0 seconds
     parser.add_argument('-int', '--interval',
                         help='Polling interval. Default 1.0 seconds')
     parser.add_argument('magic', help='Magic text to search for')
@@ -89,17 +117,13 @@ def create_parser():
 
 def signal_handler(sig_num, frame):
     """Handler for SIGTERM and SIGINT."""
-    # All log messages should contain timestamps.
-
-    # exceptions, magic text found events,
-    # files added or removed from watched dir,
-    # and OS signal events.
+    # uptime = datetime.datetime.now() - start_time
     logger = create_logger()
     logger.warning('Received ' + signal.Signals(sig_num).name)
     logger.info(f"""
 -------------------------------------------------------------------
-    Stopped dirwatcher.py
-    Uptime was TODO: UPTIME
+    Stopped {__file__}
+    Uptime was TODO: {uptime}
 -------------------------------------------------------------------
     """)
     sys.exit(1)
@@ -116,10 +140,8 @@ def main(args):
     parser = create_parser()
     ns = parser.parse_args(args)
     if not ns:
-        # TODO find out if sys.exit is allowed here
         parser.print_usage()
         sys.exit(1)
-    # path = os.path.abspath(ns.directory)
     path = ns.directory
     extension = ns.extension
     magic_word = ns.magic
@@ -128,21 +150,20 @@ def main(args):
     logger = create_logger()
     logger.info(f"""
 -------------------------------------------------------------------
-    Start dirwatcher.py
+    Start {__file__}
 -------------------------------------------------------------------
     """)
 
-    start_time = time.time()
+    start_time = datetime.datetime.now()
 
     #  TODO use exit flag
-    exit_flag = False
+    # exit_flag = False
     while True:
         try:
-            file_dict = watch_directory(path, magic_word, extension, interval)
-            print(file_dict)
-        except Exception:
-            # TODO logging.error(f'Sorry but... {Exception}')
-            pass
+            watch_directory(path, magic_word, extension, interval)
+        except FileNotFoundError:
+            logger.error(
+                f'Directory or file not found: {os.path.abspath(path)}')
         else:
             pass
         finally:

@@ -26,24 +26,26 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 
-def search_for_magic(magic_string, line, f, line_num, path):
+def search_for_magic(magic_string, line, file_name, line_num, path):
     """Searches a read line for a magic word and logs the file/line of word."""
     if magic_string in line:
         logger.info(
-            f'Magic text found: line {line_num + 1} of file {os.path.join(path, f)}')
+            f'Magic text found: line {line_num + 1} of file '
+            f'{os.path.join(path, file_name)}')
 
 
 def scan_single_file(file_dict, extension, path, magic_string):
     """Scans a file for extension and looks at each line of text"""
-    for f in file_dict:
-        if f.endswith(extension):
-            with open(os.path.join(path, f)) as read_f:
-                line_num = file_dict[f]
+    for file_name in file_dict:
+        if file_name.endswith(extension):
+            with open(os.path.join(path, file_name)) as read_f:
+                line_num = file_dict[file_name]
                 lines = read_f.readlines()[line_num:]
                 for line in lines:
-                    search_for_magic(magic_string, line, f, line_num, path)
+                    search_for_magic(magic_string, line,
+                                     file_name, line_num, path)
                     line_num += 1
-                    file_dict.update({f: line_num})
+                    file_dict.update({file_name: line_num})
 
 
 def detect_added_files(path, new_read, file_dict):
@@ -55,7 +57,8 @@ def detect_added_files(path, new_read, file_dict):
 
 
 def detect_removed_files(path, new_read):
-    """Logs removed files from provided directory and adds them to global dict."""
+    """Logs removed files from provided directory and
+    adds them to global dict."""
     global file_dict
     for f in list(file_dict):
         if f not in new_read:
@@ -115,8 +118,8 @@ def main(args):
     Start {__file__}
 -------------------------------------------------------------------
     """)
+    start_time = datetime.datetime.now()
     global file_dict
-
     while not exit_flag:
         time.sleep(interval)
         try:
@@ -126,10 +129,12 @@ def main(args):
                 f'Directory or file not found: {os.path.abspath(path)}')
             time.sleep(5)
 
+    uptime = datetime.datetime.now() - start_time
+
     logger.info(f"""
 -------------------------------------------------------------------
     Stopped {__file__}
-    Uptime was TODO: {'TODO'}
+    Uptime was TODO: {uptime}
 -------------------------------------------------------------------
     """)
 

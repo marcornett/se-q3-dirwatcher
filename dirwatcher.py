@@ -107,7 +107,7 @@ def main(args):
     ns = parser.parse_args(args)
     if not ns:
         parser.print_usage()
-        sys.exit(1)
+        exit_flag = True
     path = ns.directory
     extension = ns.extension
     magic_word = ns.magic
@@ -126,7 +126,7 @@ def main(args):
             watch_directory(path, magic_word, extension, interval)
         except FileNotFoundError:
             logger.error(
-                f'Directory or file not found: {os.path.abspath(path)}')
+                f'Directory does not exist: {os.path.abspath(path)}')
             time.sleep(5)
 
     uptime = datetime.datetime.now() - start_time

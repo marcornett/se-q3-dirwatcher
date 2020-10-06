@@ -37,15 +37,14 @@ def search_for_magic(magic_string, line, file_name, line_num, path):
 def scan_single_file(file_dict, extension, path, magic_string):
     """Scans a file for extension and looks at each line of text"""
     for file_name in file_dict:
-        if file_name.endswith(extension):
-            with open(os.path.join(path, file_name)) as read_f:
-                line_num = file_dict[file_name]
-                lines = read_f.readlines()[line_num:]
-                for line in lines:
-                    search_for_magic(magic_string, line,
-                                     file_name, line_num, path)
-                    line_num += 1
-                    file_dict.update({file_name: line_num})
+        with open(os.path.join(path, file_name)) as read_f:
+            line_num = file_dict[file_name]
+            lines = read_f.readlines()[line_num:]
+            for line in lines:
+                search_for_magic(magic_string, line,
+                                 file_name, line_num, path)
+                line_num += 1
+                file_dict.update({file_name: line_num})
 
 
 def detect_added_files(path, new_read, file_dict):
@@ -69,7 +68,7 @@ def detect_removed_files(path, new_read):
 def watch_directory(path, magic_string, extension, interval):
     """Monitors given directory and reports back changes"""
     global file_dict
-    new_read = {f: 1 for f in os.listdir(path)}
+    new_read = {f: 1 for f in os.listdir(path) if f.endswith(extension)}
     detect_added_files(path, new_read, file_dict)
     detect_removed_files(path, new_read)
     scan_single_file(file_dict, extension, path, magic_string)

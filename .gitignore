@@ -4,3 +4,4 @@
 .DS_Store
 *.log
 *.txt
+/word-dir
